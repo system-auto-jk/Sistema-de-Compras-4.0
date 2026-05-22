@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Compras 4.0">
+  <meta name="theme-color" content="#0f0f23">
+  <title>Sistema de Compras 4.0</title>
+  <script src="script.js" defer></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    body {
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      position: fixed;
+      display: flex;
+      flex-direction: column;
+    }
+    h1, h2, h3 {
+      font-family: 'Orbitron', monospace;
+    }
+    input, select, textarea {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+    .page-container {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      padding-bottom: 80px;
+    }
+    .modern-modal {
+      background: rgba(26, 26, 46, 0.98);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      border-radius: 1.5rem;
+      animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-height: 85vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .modal-backdrop {
+      animation: fadeIn 0.3s ease-out;
+    }
+    .mobile-modal {
+      position: fixed;
+      top: 50%;
+      left: 12px;
+      right: 12px;
+      width: calc(100% - 24px);
+      transform: translateY(-50%);
+      max-height: 85vh;
+      border-radius: 1.5rem;
+      background: rgba(26, 26, 46, 0.98);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+      margin: 0;
+      z-index: 1000;
+    }
+    .mobile-modal .buttons-container {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem;
+      background: rgba(26, 26, 46, 0.98);
+      border-top: 1px solid rgba(0, 212, 255, 0.2);
+      flex-shrink: 0;
+    }
+    .mobile-modal .buttons-container button {
+      flex: 1;
+    }
+    .modal-handle {
+      width: 40px;
+      height: 5px;
+      background: rgba(0, 212, 255, 0.3);
+      border-radius: 2.5px;
+      margin: 12px auto 0;
+      flex-shrink: 0;
+    }
+    .modern-button {
+      background: linear-gradient(to right, #00d4ff, #3b82f6);
+      color: #ffffff;
+      transition: all 0.2s ease;
+      border-radius: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+      border: none;
+      cursor: pointer;
+      min-height: 48px;
+      padding: 0.85rem 1.25rem;
+      font-size: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .modern-button:active {
+      transform: scale(0.98);
+    }
+    .modern-button-secondary {
+      background: linear-gradient(to right, #00ffbf, #10b981);
+      box-shadow: 0 4px 12px rgba(0, 255, 191, 0.2);
+    }
+    .modern-button-danger {
+      background: linear-gradient(to right, #ef4444, #dc2626);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+    .modern-input, .modern-select {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1.5px solid rgba(0, 212, 255, 0.2);
+      color: #e2e8f0;
+      border-radius: 0.85rem;
+      padding: 0.95rem;
+      font-size: 16px;
+      transition: all 0.2s ease;
+      min-height: 48px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .modern-input:focus, .modern-select:focus {
+      outline: none;
+      border-color: #00d4ff;
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+      background: rgba(30, 41, 59, 1);
+    }
+    .floating-total {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(0, 212, 255, 0.3);
+      border-radius: 50px;
+      padding: 0.95rem 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 212, 255, 0.15);
+      font-weight: 700;
+      color: #00ffbf;
+      z-index: 99;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1rem;
+      white-space: nowrap;
+    }
+    @media (max-width: 768px) {
+      .floating-total {
+        bottom: 100px;
+        left: 12px;
+        right: 12px;
+        transform: none;
+        width: auto;
+        max-width: calc(100% - 24px);
+      }
+    }
+    .item-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .item-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.95rem;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+      transition: all 0.2s ease;
+      min-height: 56px;
+      position: relative;
+    }
+    .item-list li.swiped {
+      background: rgba(239, 68, 68, 0.1);
+    }
+    .item-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .item-name {
+      flex: 1;
+      min-width: 0;
+      word-break: break-word;
+      font-weight: 500;
+    }
+    .item-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .icon-button {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      color: #00d4ff;
+      cursor: pointer;
+      border-radius: 0.5rem;
+      transition: all 0.2s ease;
+      font-size: 1.25rem;
+    }
+    .icon-button:active {
+      background: rgba(0, 212, 255, 0.1);
+      transform: scale(0.95);
+    }
+    .icon-button.danger {
+      color: #ef4444;
+    }
+    .checkbox-custom {
+      appearance: none;
+      width: 48px;
+      height: 48px;
+      border: 2.5px solid rgba(0, 212, 255, 0.4);
+      border-radius: 0.5rem;
+      background: rgba(30, 41, 59, 0.8);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .checkbox-custom:checked {
+      background: linear-gradient(135deg, #00d4ff, #00ffbf);
+      border-color: #00ffbf;
+      box-shadow: 0 0 12px rgba(0, 255, 191, 0.3);
+    }
+    .checkbox-custom:checked::after {
+      content: '✓';
+      color: #0f172a;
+      font-weight: 900;
+      font-size: 1.5rem;
+    }
+    .quantity-input {
+      width: 60px;
+      padding: 0.5rem;
+      text-align: center;
+      font-size: 0.95rem;
+    }
+    .toast {
+      position: fixed;
+      top: max(20px, env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(26, 26, 46, 0.98);
+      backdrop-filter: blur(20px);
+      border: 1.5px solid rgba(0, 212, 255, 0.4);
+      border-radius: 0.85rem;
+      padding: 1rem 1.5rem;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      color: #e2e8f0;
+      font-weight: 600;
+      animation: slideDown 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      max-width: calc(100% - 24px);
+      width: auto;
+      min-height: 52px;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    @keyframes slideDown {
+      from {
+        transform: translateX(-50%) translateY(-120px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+    }
+    .toast.success {
+      border-color: rgba(0, 255, 191, 0.4);
+      color: #00ffbf;
+    }
+    .toast.error {
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #ff6b6b;
+    }
+    .toast i {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .toast span {
+      flex: 1;
+      word-break: break-word;
+      text-align: center;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(0, 212, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0.75rem 0;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00d4ff, #00ffbf);
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(26, 26, 46, 0.98);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0, 212, 255, 0.2);
+      display: flex;
+      gap: 0;
+      padding-bottom: max(0px, env(safe-area-inset-bottom));
+      z-index: 100;
+      height: 80px;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      transition: all 0.2s ease;
+      font-size: 0.75rem;
+      min-height: 56px;
+    }
+    .nav-item:active {
+      background: rgba(0, 212, 255, 0.1);
+    }
+    .nav-item.active {
+      color: #00ffbf;
+    }
+    .nav-item i {
+      font-size: 1.75rem;
+    }
+    .header-bar {
+      position: sticky;
+      top: 0;
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+      padding: 1rem 1rem;
+      z-index: 50;
+      padding-top: max(1rem, env(safe-area-inset-top));
+    }
+    .card-item {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(0, 212, 255, 0.15);
+      border-radius: 0.85rem;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s ease;
+    }
+    .card-item:active {
+      background: rgba(30, 41, 59, 0.8);
+      border-color: rgba(0, 212, 255, 0.3);
+    }
+    .scrollable-list {
+      max-height: 300px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 0.85rem;
+      padding: 0.75rem;
+      background: rgba(30, 41, 59, 0.6);
+      margin: 1rem 0;
+    }
+    .scrollable-list li {
+      padding: 0.85rem;
+      border-radius: 0.5rem;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(0, 212, 255, 0.15);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      color: #00d4ff;
+      padding: 0.4rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: #94a3b8;
+    }
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    @media (min-width: 769px) {
+      .page-container {
+        padding-bottom: 20px;
+      }
+      .bottom-nav {
+        display: none;
+      }
+      .floating-total {
+        bottom: 20px;
+        right: 20px;
+        left: auto;
+        transform: none;
+      }
+      .mobile-modal {
+        max-width: 600px;
+        left: 50%;
+        right: auto;
+        transform: translate(-50%, -50%);
+        margin: 0;
+      }
+    }
+    @supports (padding: max(0px)) {
+      body {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="toastContainer"></div>
+
+  <div class="page-container">
+    <!-- Welcome Modal -->
+    <div id="welcomeModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center z-50 p-4">
+      <div class="modern-modal p-6 w-full max-w-sm">
+        <div class="text-center mb-6">
+          <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center">
+            <i class="fas fa-bag-shopping text-3xl text-white"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-cyan-400 mb-1">Compras 4.0</h2>
+          <p class="text-gray-400 text-sm">Seu assistente de compras</p>
+        </div>
+        <div class="space-y-2 mb-6">
+          <button onclick="showManageLists()" class="modern-button w-full flex items-center justify-center gap-2">
+            <i class="fas fa-list-check"></i>Gerenciar
+          </button>
+          <button onclick="showSelectListModal()" class="modern-button-secondary w-full flex items-center justify-center gap-2">
+            <i class="fas fa-eye"></i>Ver Listas
+          </button>
+          <button onclick="showHistoryModal()" class="modern-button w-full flex items-center justify-center gap-2">
+            <i class="fas fa-clock"></i>Histórico
+          </button>
+          <button onclick="showSettingsModal()" class="modern-button w-full flex items-center justify-center gap-2">
+            <i class="fas fa-cog"></i>Configurações
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Select List Modal -->
+    <div id="selectListModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center hidden z-50 p-4">
+      <div class="modern-modal p-6 w-full max-w-sm">
+        <div class="mb-4">
+          <h3 class="text-xl font-bold text-cyan-400 flex items-center gap-2">
+            <i class="fas fa-list"></i>Minhas Listas
+          </h3>
+        </div>
+        <div id="noListsMessage" class="hidden text-center py-8">
+          <i class="fas fa-inbox text-4xl text-gray-500 mb-4"></i>
+          <p class="text-gray-400 text-sm mb-4">Nenhuma lista</p>
+          <button onclick="showManageLists()" class="modern-button-secondary w-full p-3">Criar</button>
+        </div>
+        <div id="listSelection" class="space-y-2 mb-4">
+          <div id="listGrid" class="space-y-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manage Lists Section -->
+    <section id="manageListSection" class="hidden">
+      <div class="header-bar flex items-center justify-between">
+        <h2 class="text-xl font-bold text-cyan-400">Gerenciar Listas</h2>
+        <button onclick="showWelcomeModal()" class="icon-button">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="p-4 space-y-3">
+        <!-- Create List -->
+        <div class="card-item">
+          <h3 class="text-sm font-semibold text-cyan-400 mb-3">Nova Lista</h3>
+          <div class="flex gap-2">
+            <input id="newListName" type="text" placeholder="Nome..." class="modern-input flex-1">
+            <button onclick="createList()" class="modern-button">+</button>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card-item">
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="importList()" class="modern-button-secondary text-sm flex-1 flex items-center justify-center gap-1">
+              <i class="fas fa-upload text-sm"></i><span>Importar</span>
+            </button>
+            <button id="exportButton" onclick="exportList('json')" class="modern-button-secondary text-sm flex-1 hidden flex items-center justify-center gap-1">
+              <i class="fas fa-download text-sm"></i><span>JSON</span>
+            </button>
+            <button id="exportPdfButton" onclick="exportList('pdf')" class="modern-button-secondary text-sm flex-1 hidden flex items-center justify-center gap-1">
+              <i class="fas fa-file-pdf text-sm"></i><span>PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Select List -->
+        <div class="card-item">
+          <h3 class="text-sm font-semibold text-cyan-400 mb-3">Selecionar</h3>
+          <select id="listSelect" onchange="loadList()" class="modern-select">
+            <option value="">Escolha uma lista</option>
+          </select>
+          <div class="flex gap-2 mt-3">
+            <button id="duplicateListButton" onclick="duplicateList()" class="modern-button text-sm flex-1 hidden">
+              <i class="fas fa-copy text-sm"></i>
+            </button>
+            <button id="deleteListButton" onclick="startDeleteList()" class="modern-button-danger text-sm flex-1 hidden">
+              <i class="fas fa-trash text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Add Item -->
+        <div id="addItemSection" class="card-item hidden">
+          <h3 class="text-sm font-semibold text-cyan-400 mb-3">Adicionar Item</h3>
+          <div class="space-y-2">
+            <datalist id="suggestions"></datalist>
+            <input id="newItem" type="text" list="suggestions" placeholder="Item..." class="modern-input">
+            <input id="newItemBrand" type="text" placeholder="Marca" class="modern-input">
+            <input id="newItemQuantity" type="number" min="1" value="1" placeholder="Qtd" class="modern-input">
+            <button onclick="addItem()" class="modern-button w-full">Adicionar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Shopping View Section -->
+    <section id="shoppingView" class="hidden pb-20">
+      <div class="header-bar">
+        <div class="flex items-center justify-between">
+          <h2 id="listTitle" class="text-xl font-bold text-cyan-400"></h2>
+          <button onclick="showManageLists()" class="icon-button">
+            <i class="fas fa-cog"></i>
+          </button>
+        </div>
+        <div class="mt-3">
+          <input id="searchItem" type="text" placeholder="Buscar..." class="modern-input text-sm" oninput="searchItems()">
+        </div>
+        <div class="mt-3 flex gap-2 overflow-x-auto pb-2">
+          <button class="tab-button active text-xs whitespace-nowrap px-3 py-1.5" onclick="setFilter('all')">Todos</button>
+          <button class="tab-button text-xs whitespace-nowrap px-3 py-1.5" onclick="setFilter('unchecked')">Não comprados</button>
+          <button class="tab-button text-xs whitespace-nowrap px-3 py-1.5" onclick="setFilter('checked')">Comprados</button>
+          <button class="tab-button text-xs whitespace-nowrap px-3 py-1.5" onclick="setFilter('alphabetical')">A-Z</button>
+        </div>
+        <div class="mt-3">
+          <div class="flex justify-between items-center text-xs mb-1">
+            <span class="text-gray-400">Progresso</span>
+            <span id="progressText" class="text-cyan-400 font-semibold">0/0</span>
+          </div>
+          <div class="progress-bar">
+            <div id="progressFill" class="progress-bar-fill" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Item Section -->
+      <div id="addItemShoppingSection" class="card-item mx-4 mt-4 hidden">
+        <h3 class="text-sm font-semibold text-cyan-400 mb-2">Adicionar Item</h3>
+        <div class="space-y-2">
+          <datalist id="suggestions-shopping"></datalist>
+          <input id="newItemShopping" type="text" list="suggestions-shopping" placeholder="Item..." class="modern-input text-sm">
+          <input id="newItemBrandShopping" type="text" placeholder="Marca" class="modern-input text-sm">
+          <input id="newItemQuantityShopping" type="number" min="1" value="1" placeholder="Qtd" class="modern-input text-sm">
+          <button onclick="addItem()" class="modern-button w-full text-sm">Adicionar</button>
+        </div>
+      </div>
+
+      <!-- Items List -->
+      <ul id="itemList" class="item-list"></ul>
+
+      <!-- Action Buttons Mobile -->
+      <div class="px-4 pb-4 space-y-2 hidden sm:flex sm:gap-2 sm:pb-0">
+        <button onclick="uncheckAllItems()" class="modern-button-danger flex-1 text-sm">Desmarcar</button>
+        <button onclick="startFinalizePurchase()" class="modern-button-secondary flex-1 text-sm">Finalizar</button>
+      </div>
+    </section>
+
+    <!-- Price Modal -->
+    <div id="priceModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center hidden z-50">
+     <div class="mobile-modal">
+       <div class="modal-handle"></div>
+       <div class="px-4 pt-2 pb-2 flex-1 overflow-y-auto">
+         <h3 class="text-lg font-bold text-cyan-400 mb-4 sticky top-0 bg-gradient-to-b from-[rgba(26,26,46,0.98)] to-transparent pb-2">
+           <i class="fas fa-tag"></i> <span id="modalItemName" class="text-green-400"></span>
+         </h3>
+         <div class="space-y-3 pb-4">
+           <div>
+             <label class="text-sm text-gray-300 mb-2 block font-semibold">Preço (R$)</label>
+             <input id="itemPrice" type="number" step="0.01" min="0" class="modern-input">
+           </div>
+           <div>
+             <label class="text-sm text-gray-300 mb-2 block font-semibold">Quantidade</label>
+             <input id="itemQuantity" type="number" min="1" class="modern-input">
+           </div>
+           <div class="bg-blue-500 bg-opacity-10 border border-blue-500 border-opacity-20 rounded-lg p-3">
+             <p class="text-sm text-blue-300">Total: R$ <span id="itemTotal">0.00</span></p>
+           </div>
+         </div>
+       </div>
+       <div class="buttons-container">
+         <button onclick="cancelPrice()" class="modern-button bg-gray-600">Cancelar</button>
+         <button onclick="confirmPrice()" class="modern-button-secondary">Confirmar</button>
+       </div>
+     </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center hidden z-50">
+      <div class="mobile-modal">
+        <div class="modal-handle"></div>
+        <div class="px-4 pt-2 pb-2 flex-1 overflow-y-auto">
+          <h3 class="text-lg font-bold text-cyan-400 mb-4 sticky top-0 bg-gradient-to-b from-[rgba(26,26,46,0.98)] to-transparent pb-2">
+            <i class="fas fa-edit"></i> <span id="editItemName" class="text-green-400"></span>
+          </h3>
+          <div class="space-y-3 pb-4">
+            <div>
+              <label class="text-sm text-gray-300 mb-2 block font-semibold">Nome</label>
+              <input id="editName" type="text" class="modern-input">
+            </div>
+            <div>
+              <label class="text-sm text-gray-300 mb-2 block font-semibold">Marca</label>
+              <input id="editBrand" type="text" class="modern-input">
+            </div>
+            <div>
+              <label class="text-sm text-gray-300 mb-2 block font-semibold">Quantidade</label>
+              <input id="editQuantity" type="number" min="1" class="modern-input">
+            </div>
+            <div id="editPriceSection" class="hidden">
+              <label class="text-sm text-gray-300 mb-2 block font-semibold">Preço (R$)</label>
+              <input id="editPrice" type="number" step="0.01" min="0" class="modern-input">
+            </div>
+          </div>
+        </div>
+        <div class="buttons-container">
+          <button onclick="cancelEdit()" class="modern-button bg-gray-600">Cancelar</button>
+          <button onclick="confirmEdit()" class="modern-button-secondary">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center hidden z-50">
+      <div class="mobile-modal">
+        <div class="modal-handle"></div>
+        <div class="px-4 pt-4 pb-2 flex-1 overflow-y-auto">
+          <h3 id="confirmTitle" class="text-lg font-bold text-cyan-400 mb-4"></h3>
+          <p id="confirmMessage" class="text-gray-300 mb-6 text-sm leading-relaxed"></p>
+        </div>
+        <div class="buttons-container">
+          <button onclick="cancelConfirm()" class="modern-button bg-gray-600">Cancelar</button>
+          <button onclick="confirmConfirm()" class="modern-button-danger">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Finalize Purchase Modal -->
+    <div id="finalizePurchaseModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center hidden z-50">
+      <div class="mobile-modal">
+        <div class="modal-handle"></div>
+        <div class="px-4 pt-4 pb-2 flex-1 overflow-y-auto">
+          <h3 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
+            <i class="fas fa-receipt"></i>Revisar Compra
+          </h3>
+          <div class="bg-green-500 bg-opacity-10 border border-green-500 border-opacity-20 rounded-lg p-4 mb-4">
+            <p class="text-gray-300 text-xs mb-1">Total</p>
+            <p class="text-2xl font-bold text-green-400">R$ <span id="finalizeTotalPrice">0.00</span></p>
+          </div>
+          <div id="uncheckedItemsSection" class="mb-4">
+            <p class="text-gray-300 font-semibold text-sm mb-2">Não comprados:</p>
+            <ul id="uncheckedItemsList" class="scrollable-list"></ul>
+          </div>
+        </div>
+        <div class="buttons-container">
+          <button onclick="continueShopping()" class="modern-button bg-gray-600">Continuar</button>
+          <button onclick="confirmFinalizePurchase()" class="modern-button-secondary">Finalizar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="finalizedPurchaseModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center hidden z-50 p-4">
+      <div class="modern-modal p-6 w-full max-w-sm text-center">
+        <div class="mb-6">
+          <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-green-400 to-emerald-600 rounded-2xl flex items-center justify-center">
+            <i class="fas fa-check text-3xl text-white"></i>
+          </div>
+          <h3 class="text-2xl font-bold text-green-400">Sucesso!</h3>
+        </div>
+        <div class="bg-green-500 bg-opacity-10 border border-green-500 border-opacity-20 rounded-lg p-4 mb-4">
+          <p class="text-gray-300 text-xs mb-1">Total</p>
+          <p class="text-2xl font-bold text-green-400">R$ <span id="finalizedTotalPrice">0.00</span></p>
+        </div>
+        <div class="space-y-2">
+          <button onclick="exportToWhatsApp()" class="modern-button-secondary w-full flex items-center justify-center gap-2">
+            <i class="fab fa-whatsapp"></i>WhatsApp
+          </button>
+          <button onclick="exportList('pdf')" class="modern-button w-full text-sm">Exportar PDF</button>
+          <button onclick="closeFinalizedModal()" class="modern-button w-full">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center hidden z-50">
+      <div class="mobile-modal">
+        <div class="modal-handle"></div>
+        <div class="px-4 pt-4 pb-2 flex-1 overflow-y-auto">
+          <h3 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
+            <i class="fas fa-history"></i>Histórico
+          </h3>
+          <ul id="historyList" class="scrollable-list mb-4"></ul>
+        </div>
+        <div class="buttons-container">
+          <button onclick="showStatsModal()" class="modern-button-secondary">Estatísticas</button>
+          <button onclick="closeHistoryModal()" class="modern-button">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Modal -->
+    <div id="statsModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center hidden z-50">
+      <div class="mobile-modal">
+        <div class="modal-handle"></div>
+        <div class="px-4 pt-4 pb-2 flex-1 overflow-y-auto">
+          <h3 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
+            <i class="fas fa-chart-bar"></i>Estatísticas
+          </h3>
+          <div id="statsContent" class="scrollable-list mb-4"></div>
+        </div>
+        <div class="buttons-container">
+          <button onclick="closeStatsModal()" class="modern-button" style="width: 100%;">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center hidden z-50">
+      <div class="mobile-modal">
+        <div class="modal-handle"></div>
+        <div class="px-4 pt-4 pb-2 flex-1 overflow-y-auto">
+          <h3 class="text-lg font-bold text-cyan-400 mb-4 flex items-center gap-2">
+            <i class="fas fa-cog"></i>Configurações
+          </h3>
+          <div class="space-y-3 mb-4">
+            <div class="card-item">
+              <label class="flex items-center justify-between cursor-pointer">
+                <span class="text-gray-300 font-semibold text-sm">Sons</span>
+                <input type="checkbox" id="soundToggle" onchange="toggleSound()" class="w-5 h-5" checked>
+              </label>
+            </div>
+            <div class="card-item">
+              <button onclick="clearAllData()" class="modern-button-danger w-full text-sm">
+                <i class="fas fa-trash"></i> Limpar Dados
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="buttons-container">
+          <button onclick="closeSettingsModal()" class="modern-button" style="width: 100%;">Fechar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation (Mobile Only) -->
+  <div class="bottom-nav sm:hidden">
+    <button class="nav-item" onclick="showWelcomeModal()">
+      <i class="fas fa-home"></i>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" onclick="showSelectListModal()">
+      <i class="fas fa-list"></i>
+      <span>Listas</span>
+    </button>
+    <button class="nav-item" onclick="toggleAddItemSection()" id="addNavBtn">
+      <i class="fas fa-plus"></i>
+      <span>Adicionar</span>
+    </button>
+    <button class="nav-item" onclick="showHistoryModal()">
+      <i class="fas fa-clock"></i>
+      <span>Histórico</span>
+    </button>
+    <button class="nav-item" onclick="showSettingsModal()">
+      <i class="fas fa-cog"></i>
+      <span>Config</span>
+    </button>
+  </div>
+
+  <!-- Floating Total -->
+  <div id="floatingTotal" class="floating-total hidden sm:flex">
+    <i class="fas fa-shopping-cart"></i>
+    <span>R$ <span id="totalPrice">0.00</span></span>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW failed'));
+      });
+    }
+  </script>
+</body>
+</html>

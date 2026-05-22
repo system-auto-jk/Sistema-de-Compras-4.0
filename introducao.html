@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f0f23">
+  <title>Introdução - Sistema de Compras 4.0</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+    html, body {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    body {
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+    h1, h2, h3, h4 {
+      font-family: 'Orbitron', monospace;
+    }
+    .hero-section {
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      padding: 3rem 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 6s ease-in-out infinite;
+    }
+    .hero-section::after {
+      content: '';
+      position: absolute;
+      bottom: -50%;
+      left: -50%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0, 255, 191, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      animation: float 8s ease-in-out infinite reverse;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(30px); }
+    }
+    .hero-content {
+      position: relative;
+      z-index: 10;
+    }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem 1.5rem;
+    }
+    .feature-card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(0, 212, 255, 0.15);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+    .feature-card:hover {
+      background: rgba(30, 41, 59, 0.9);
+      border-color: rgba(0, 212, 255, 0.4);
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 212, 255, 0.15);
+    }
+    .feature-card:hover::before {
+      top: 0;
+      right: 0;
+    }
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #00d4ff, #00ffbf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .feature-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+      color: #00d4ff;
+    }
+    .feature-card p {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      animation: fadeIn 0.3s ease-out;
+    }
+    .modal-overlay.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .modal-content {
+      background: rgba(26, 26, 46, 0.98);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      max-width: 600px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+    }
+    .modal-header i {
+      font-size: 2rem;
+      background: linear-gradient(135deg, #00d4ff, #00ffbf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .modal-header h2 {
+      font-size: 1.75rem;
+      color: #00d4ff;
+      margin: 0;
+    }
+    .modal-body {
+      margin-bottom: 1.5rem;
+    }
+    .modal-body h3 {
+      color: #00ffbf;
+      margin: 1.5rem 0 0.75rem 0;
+      font-size: 1.1rem;
+    }
+    .modal-body h3:first-child {
+      margin-top: 0;
+    }
+    .modal-body p, .modal-body li {
+      color: #cbd5e1;
+      line-height: 1.8;
+      margin-bottom: 0.75rem;
+    }
+    .modal-body ul {
+      padding-left: 1.5rem;
+      margin: 1rem 0;
+    }
+    .modal-body li {
+      margin-bottom: 0.5rem;
+    }
+    .step-box {
+      background: rgba(0, 212, 255, 0.1);
+      border-left: 3px solid #00d4ff;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+    }
+    .step-box strong {
+      color: #00ffbf;
+    }
+    .modal-footer {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+    .btn {
+      padding: 0.85rem 1.5rem;
+      border: none;
+      border-radius: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      min-height: 48px;
+    }
+    .btn-primary {
+      background: linear-gradient(to right, #00d4ff, #3b82f6);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+    }
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+    .btn-secondary {
+      background: linear-gradient(to right, #00ffbf, #10b981);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 255, 191, 0.2);
+    }
+    .btn-secondary:active {
+      transform: scale(0.98);
+    }
+    .btn-close {
+      background: rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      padding: 0.5rem 1rem;
+    }
+    .intro-section {
+      padding: 2rem 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .intro-section h2 {
+      color: #00d4ff;
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    .steps-timeline {
+      position: relative;
+      padding: 2rem 0;
+    }
+    .timeline-item {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 30px;
+      top: 100px;
+      width: 2px;
+      height: calc(100% + 2rem);
+      background: linear-gradient(to bottom, #00d4ff, #00ffbf);
+      opacity: 0.3;
+    }
+    .timeline-item:last-child::before {
+      display: none;
+    }
+    .timeline-number {
+      flex-shrink: 0;
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, #00d4ff, #00ffbf);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0f0f23;
+      box-shadow: 0 8px 20px rgba(0, 212, 255, 0.2);
+    }
+    .timeline-content {
+      flex: 1;
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(0, 212, 255, 0.15);
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+    .timeline-content h3 {
+      color: #00ffbf;
+      margin: 0 0 0.75rem 0;
+      font-size: 1.3rem;
+    }
+    .timeline-content p {
+      color: #cbd5e1;
+      line-height: 1.7;
+      margin: 0;
+    }
+    .faq-section {
+      padding: 2rem 1.5rem;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .faq-item {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(0, 212, 255, 0.15);
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+    }
+    .faq-question:hover {
+      background: rgba(30, 41, 59, 0.9);
+    }
+    .faq-question h4 {
+      margin: 0;
+      color: #00d4ff;
+      font-size: 1.1rem;
+    }
+    .faq-toggle {
+      font-size: 1.5rem;
+      color: #00ffbf;
+      transition: transform 0.3s ease;
+    }
+    .faq-toggle.active {
+      transform: rotate(180deg);
+    }
+    .faq-answer {
+      display: none;
+      padding: 0 1.5rem 1.5rem 1.5rem;
+      border-top: 1px solid rgba(0, 212, 255, 0.1);
+      color: #cbd5e1;
+      line-height: 1.8;
+    }
+    .faq-answer.active {
+      display: block;
+    }
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: #64748b;
+      border-top: 1px solid rgba(0, 212, 255, 0.2);
+    }
+    .btn-start {
+      display: block;
+      margin: 2rem auto;
+      max-width: 300px;
+    }
+    .feature-card.clickable {
+      position: relative;
+      z-index: 1;
+    }
+    .scrollable-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scrollable-list::-webkit-scrollbar-track {
+      background: rgba(0, 212, 255, 0.05);
+      border-radius: 10px;
+    }
+    .scrollable-list::-webkit-scrollbar-thumb {
+      background: rgba(0, 212, 255, 0.3);
+      border-radius: 10px;
+    }
+    .scrollable-list::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 212, 255, 0.5);
+    }
+    @media (max-width: 768px) {
+      .hero-section {
+        padding: 2rem 1rem;
+      }
+      .modal-content {
+        padding: 1.5rem;
+        max-width: 100%;
+      }
+      .timeline-item {
+        gap: 1rem;
+      }
+      .timeline-number {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+      }
+      .intro-section h2 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div style="font-size: 4rem; margin-bottom: 1rem;">
+        <i class="fas fa-shopping-bag" style="background: linear-gradient(135deg, #00d4ff, #00ffbf); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+      </div>
+      <h1 style="font-size: 2.5rem; margin: 0 0 1rem 0; background: linear-gradient(135deg, #00d4ff, #00ffbf); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+        Compras 4.0
+      </h1>
+      <p style="font-size: 1.2rem; color: #cbd5e1; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        Seu assistente inteligente para gerenciar listas de compras com estilo moderno
+      </p>
+      <button onclick="document.getElementById('welcomeModal').classList.add('active')" class="btn btn-primary">
+        <i class="fas fa-play"></i> Começar Agora
+      </button>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="intro-section">
+    <h2 style="color: #00ffbf;">✨ Recursos Principais</h2>
+    <div class="feature-grid">
+      <div class="feature-card clickable" onclick="openModal('listasModal')">
+        <div class="feature-icon">
+          <i class="fas fa-list-check"></i>
+        </div>
+        <h3>Gerenciar Listas</h3>
+        <p>Crie, edite e organize múltiplas listas de compras com facilidade. Personalize cada uma conforme sua necessidade.</p>
+      </div>
+      <div class="feature-card clickable" onclick="openModal('itemsModal')">
+        <div class="feature-icon">
+          <i class="fas fa-plus-circle"></i>
+        </div>
+        <h3>Adicionar Itens</h3>
+        <p>Adicione itens com marca e quantidade. Sistema de sugestões aprende seus itens favoritos automaticamente.</p>
+      </div>
+      <div class="feature-card clickable" onclick="openModal('compraModal')">
+        <div class="feature-icon">
+          <i class="fas fa-credit-card"></i>
+        </div>
+        <h3>Registrar Preços</h3>
+        <p>Acompanhe preços em tempo real e calcule o total de sua compra automaticamente.</p>
+      </div>
+      <div class="feature-card clickable" onclick="openModal('finalizarModal')">
+        <div class="feature-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h3>Finalizar Compras</h3>
+        <p>Marque itens como comprados e finalize com um resumo completo da transação.</p>
+      </div>
+      <div class="feature-card clickable" onclick="openModal('historicoModal')">
+        <div class="feature-icon">
+          <i class="fas fa-history"></i>
+        </div>
+        <h3>Histórico & Estatísticas</h3>
+        <p>Acompanhe todas as suas compras anteriores e visualize gastos mensais e médias.</p>
+      </div>
+      <div class="feature-card clickable" onclick="openModal('exportModal')">
+        <div class="feature-icon">
+          <i class="fas fa-share-alt"></i>
+        </div>
+        <h3>Exportar & Compartilhar</h3>
+        <p>Exporte para PDF, JSON ou WhatsApp. Compartilhe suas listas com amigos e família facilmente.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How to Use Section -->
+  <section class="intro-section">
+    <h2>📖 Como Usar</h2>
+    <div class="steps-timeline">
+      <div class="timeline-item">
+        <div class="timeline-number">1</div>
+        <div class="timeline-content">
+          <h3>Crie uma Lista</h3>
+          <p>Vá para Gerenciar → Digite o nome da sua lista → Clique em + para criar. Perfeito para organizar compras por categoria (supermercado, farmácia, etc).</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-number">2</div>
+        <div class="timeline-content">
+          <h3>Adicione Itens</h3>
+          <p>Selecione a lista → Clique em Adicionar → Preencha nome, marca (opcional) e quantidade. O sistema memoriza seus itens frequentes!</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-number">3</div>
+        <div class="timeline-content">
+          <h3>Compre e Registre Preços</h3>
+          <p>Na loja, clique no checkbox do item → Informe o preço pago → Confirme. O total é calculado automaticamente!</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-number">4</div>
+        <div class="timeline-content">
+          <h3>Finalize e Analise</h3>
+          <p>Clique em Finalizar → Revise o resumo → Confirme. Veja histórico completo e estatísticas mensais de gastos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq-section">
+    <div class="intro-section">
+      <h2>❓ Perguntas Frequentes</h2>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">
+          <h4>Como os dados são salvos?</h4>
+          <span class="faq-toggle">▼</span>
+        </div>
+        <div class="faq-answer">
+          Todos os seus dados são salvos localmente no seu dispositivo usando armazenamento seguro. Nada é enviado para servidores externos. Mesmo offline, você pode acessar suas listas!
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">
+          <h4>Posso usar em múltiplos dispositivos?</h4>
+          <span class="faq-toggle">▼</span>
+        </div>
+        <div class="faq-answer">
+          No momento, cada dispositivo tem seu próprio armazenamento. Mas você pode exportar suas listas como JSON em um dispositivo e importar em outro facilmente!
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">
+          <h4>Como editar um item após adicionado?</h4>
+          <span class="faq-toggle">▼</span>
+        </div>
+        <div class="faq-answer">
+          Clique no ícone de edição (lápis) ao lado do item. Você pode alterar nome, marca e quantidade. Se o item foi comprado, também pode ajustar o preço.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">
+          <h4>Posso compartilhar com outras pessoas?</h4>
+          <span class="faq-toggle">▼</span>
+        </div>
+        <div class="faq-answer">
+          Sim! Você pode compartilhar via WhatsApp (com formatação), PDF ou enviar o arquivo JSON para outra pessoa importar. Excelente para compras em grupo!
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">
+          <h4>Como limpar meus dados?</h4>
+          <span class="faq-toggle">▼</span>
+        </div>
+        <div class="faq-answer">
+          Vá para Configurações → Limpar Dados. Cuidado: esta ação é irreversível e deletará todas as listas e histórico!
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFAQ(this)">
+          <h4>Funciona offline?</h4>
+          <span class="faq-toggle">▼</span>
+        </div>
+        <div class="faq-answer">
+          Sim! É uma Progressive Web App (PWA). Uma vez carregado, funciona completamente offline. Apenas a exportação para WhatsApp necessita conexão.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="intro-section" style="text-align: center;">
+    <h2>🚀 Pronto para Começar?</h2>
+    <p style="color: #cbd5e1; font-size: 1.1rem; margin-bottom: 2rem;">
+      Explore todos os recursos e comece a organizar suas compras agora mesmo!
+    </p>
+    <a href="index.html" class="btn btn-secondary btn-start">
+      <i class="fas fa-arrow-right"></i> Ir para Sistema de Compras
+    </a>
+  </section>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>Sistema de Compras 4.0 © 2024 | Seu assistente inteligente de compras</p>
+    <p style="font-size: 0.9rem; margin-top: 1rem;">Desenvolvido com ❤️ para facilitar seu dia a dia</p>
+  </div>
+
+  <!-- MODALS -->
+
+  <!-- Welcome Modal -->
+  <div id="welcomeModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <i class="fas fa-info-circle"></i>
+        <h2>Bem-vindo!</h2>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 1.1rem; margin-bottom: 1.5rem;">
+          O <strong>Compras 4.0</strong> é seu assistente inteligente para gerenciar listas de compras. Aqui você pode:
+        </p>
+        <ul>
+          <li>✅ Criar e organizar múltiplas listas</li>
+          <li>💰 Acompanhar preços e calcular totais</li>
+          <li>📊 Visualizar histórico e estatísticas</li>
+          <li>📤 Exportar para PDF, JSON ou WhatsApp</li>
+          <li>🌙 Usar completamente offline</li>
+        </ul>
+        <div class="step-box">
+          <strong>Dica:</strong> Clique em qualquer card acima para aprender mais sobre cada recurso!
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('welcomeModal')" class="btn btn-secondary">Entendi!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Listas Modal -->
+  <div id="listasModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <i class="fas fa-list-check"></i>
+        <h2>Gerenciar Listas</h2>
+      </div>
+      <div class="modal-body">
+        <h3>O que é possível fazer:</h3>
+        <ul>
+          <li><strong>Criar:</strong> Digite o nome e clique em + para criar uma nova lista</li>
+          <li><strong>Duplicar:</strong> Crie cópias de listas existentes para reutilizar estruturas</li>
+          <li><strong>Deletar:</strong> Remova listas que não precisa mais</li>
+          <li><strong>Ver:</strong> Acesse suas listas a qualquer hora</li>
+        </ul>
+        <h3>Dicas Úteis:</h3>
+        <div class="step-box">
+          <strong>Organização:</strong> Crie listas por categoria:
+          <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+            <li>Supermercado</li>
+            <li>Farmácia</li>
+            <li>Padaria</li>
+            <li>Festa de fim de semana</li>
+          </ul>
+        </div>
+        <div class="step-box">
+          <strong>Reutilização:</strong> Crie uma lista padrão e duplique quando for fazer novas compras!
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('listasModal')" class="btn btn-secondary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items Modal -->
+  <div id="itemsModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <i class="fas fa-plus-circle"></i>
+        <h2>Adicionar Itens</h2>
+      </div>
+      <div class="modal-body">
+        <h3>Campos para Preencher:</h3>
+        <ul>
+          <li><strong>Nome:</strong> Nome do item (obrigatório)</li>
+          <li><strong>Marca:</strong> Marca do produto (opcional, mas útil!)</li>
+          <li><strong>Quantidade:</strong> Quantas unidades precisa (padrão: 1)</li>
+        </ul>
+        <h3>Sistema de Sugestões:</h3>
+        <p>O sistema aprende seus itens frequentes! Conforme você adiciona itens, eles aparecem como sugestões ao digitar.</p>
+        <h3>Onde Adicionar:</h3>
+        <div class="step-box">
+          <strong>Local 1:</strong> Na seção "Gerenciar Listas", há um formulário de adição
+        </div>
+        <div class="step-box">
+          <strong>Local 2:</strong> Ao visualizar uma lista, clique no botão + na barra inferior (mobile) ou use a seção lateral
+        </div>
+        <div class="step-box">
+          <strong>Dica:</strong> Adicione a marca do produto para encontrar exatamente o que procura na loja!
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('itemsModal')" class="btn btn-secondary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compra Modal -->
+  <div id="compraModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <i class="fas fa-credit-card"></i>
+        <h2>Registrar Compras</h2>
+      </div>
+      <div class="modal-body">
+        <h3>Processo de Compra:</h3>
+        <div class="step-box">
+          <strong>Passo 1:</strong> Clique no checkbox ao lado do item
+        </div>
+        <div class="step-box">
+          <strong>Passo 2:</strong> Um modal aparecerá pedindo o preço
+        </div>
+        <div class="step-box">
+          <strong>Passo 3:</strong> Informe o preço pago e a quantidade
+        </div>
+        <div class="step-box">
+          <strong>Passo 4:</strong> Clique em Confirmar
+        </div>
+        <h3>O que Acontece:</h3>
+        <ul>
+          <li>✅ Item é marcado como comprado</li>
+          <li>💰 Total é calculado automaticamente (preço × quantidade)</li>
+          <li>📊 Progresso visual é atualizado</li>
+          <li>🔊 Som de confirmação (pode desativar em Configurações)</li>
+        </ul>
+        <h3>Editar Preço:</h3>
+        <p>Clique no ícone de edição (lápis) do item para ajustar preço após comprado</p>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('compraModal')" class="btn btn-secondary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Finalizar Modal -->
+  <div id="finalizarModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <i class="fas fa-check-circle"></i>
+        <h2>Finalizar Compras</h2>
+      </div>
+      <div class="modal-body">
+        <h3>O que é Finalizar:</h3>
+        <p>Finalizar é o processo de encerrar uma compra e registrá-la no histórico permanentemente.</p>
+        <h3>Passos:</h3>
+        <div class="step-box">
+          <strong>1:</strong> Compre seus itens e marque como comprado
+        </div>
+        <div class="step-box">
+          <strong>2:</strong> Clique em "Finalizar" (botão na barra inferior ou seção de ações)
+        </div>
+        <div class="step-box">
+          <strong>3:</strong> Revise o resumo (total e itens não comprados)
+        </div>
+        <div class="step-box">
+          <strong>4:</strong> Clique em "Finalizar Compra"
+        </div>
+        <h3>O Que Acontece:</h3>
+        <ul>
+          <li>✅ Compra é registrada no histórico com data e hora</li>
+          <li>📊 Dados alimentam as estatísticas mensais</li>
+          <li>📤 Pode exportar ou compartilhar resultado</li>
+          <li>🔄 Lista permanece para próxima compra</li>
+        </ul>
+        <h3>Nota Importante:</h3>
+        <p>Itens não comprados são mostrados para referência. Você ainda pode comprar depois!</p>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('finalizarModal')" class="btn btn-secondary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Histórico Modal -->
+  <div id="historicoModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <i class="fas fa-history"></i>
+        <h2>Histórico & Estatísticas</h2>
+      </div>
+      <div class="modal-body">
+        <h3>O Histórico:</h3>
+        <p>Mantém registro de todas as compras finalizadas com:</p>
+        <ul>
+          <li>📅 Data e hora da compra</li>
+          <li>📋 Lista utilizada</li>
+          <li>💰 Valor total gasto</li>
+          <li>📝 Itens comprados (com preços)</li>
+        </ul>
+        <h3>Clicando em um Histórico:</h3>
+        <p>Você pode compartilhar via WhatsApp com os detalhes completos da compra!</p>
+        <h3>Estatísticas:</h3>
+        <div class="step-box">
+          <strong>O que você vê:</strong>
+          <ul style="margin-top: 0.5rem; padding-left: 1.5rem;">
+            <li>Total gasto no mês atual</li>
+            <li>Média por compra</li>
+            <li>Listagem de todas as compras do mês</li>
+          </ul>
+        </div>
+        <h3>Dica:</h3>
+        <p>Use as estatísticas para controlar seus gastos e identificar padrões de consumo!</p>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('historicoModal')" class="btn btn-secondary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="exportModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <i class="fas fa-share-alt"></i>
+        <h2>Exportar & Compartilhar</h2>
+      </div>
+      <div class="modal-body">
+        <h3>Formatos de Exportação:</h3>
+        <div class="step-box">
+          <strong>📄 JSON:</strong> Formato técnico para backup ou importar em outro dispositivo
+        </div>
+        <div class="step-box">
+          <strong>📕 PDF:</strong> Arquivo imprimível com lista formatada para levar na bolsa ou imprimir
+        </div>
+        <div class="step-box">
+          <strong>💬 WhatsApp:</strong> Compartilhe via WhatsApp com formatação automática
+        </div>
+        <h3>Como Usar:</h3>
+        <ul>
+          <li>Na seção "Gerenciar Listas", selecione uma lista</li>
+          <li>Clique em um dos botões de exportação</li>
+          <li>O arquivo será baixado ou a conversa do WhatsApp será aberta</li>
+        </ul>
+        <h3>WhatsApp:</h3>
+        <p>A exportação inclui emojis e formatação para ficar bonito no chat! Perfeito para compartilhar com amigos ou companheiros de compra.</p>
+        <h3>Importar de Volta:</h3>
+        <p>Se você receber um arquivo JSON, em "Gerenciar Listas" clique em "Importar" e selecione o arquivo. A lista será adicionada ao seu sistema!</p>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeModal('exportModal')" class="btn btn-secondary">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function toggleFAQ(element) {
+      const answer = element.nextElementSibling;
+      const toggle = element.querySelector('.faq-toggle');
+      
+      answer.classList.toggle('active');
+      toggle.classList.toggle('active');
+    }
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+        }
+      });
+    });
+
+    // Prevent closing when clicking inside modal content
+    document.querySelectorAll('.modal-content').forEach(content => {
+      content.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    });
+  </script>
+</body>
+</html>
